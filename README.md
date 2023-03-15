@@ -6,7 +6,7 @@ Computers are becoming increasingly parallel, with many cores or processors work
 
 ### The core topics covered in the course include:
 
-multithreaded programming in Java,
+Multithreaded programming in Java,
 mutual exclusion,
 concurrent objects,
 locks and contention resolution,
