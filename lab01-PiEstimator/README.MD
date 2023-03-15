@@ -1,6 +1,6 @@
 ### Program Description 
 
-<img src = 'https://user-images.githubusercontent.com/63077056/225182690-ba3f819e-5b4d-473d-a185-8798d424aeb9.png' width = 700px> 
+<img src = 'https://user-images.githubusercontent.com/63077056/225184583-764cf19a-9325-44eb-b0e6-d6b02fb3175e.png' width = 700px> 
 
 ### Code Performance 
 Note that the third column indicates the time needed to run approximately 1 billion samples
