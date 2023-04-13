@@ -118,37 +118,28 @@ public class Mandelbrot {
         float xStep = (xMax - xMin) / esc[0].length;
         float yStep = (yMax - yMin) / esc.length;
         // create array of one piece of complex number
-        float[] cx_arr = new float[esc[0].length];
-
-        for (int j = 0; j < cx_arr.length; j++) {
-            float cx = xMin + j * xStep;
-            cx_arr[j] = cx; // avoid making these arrrays
-        }
-
-        // create another array of one piece of complex number
-        float[] cy_arr = new float[esc.length];
-
-        for (int i = 0; i < cy_arr.length; i++) {
-            float cy = yMin + i * yStep;
-            cy_arr[i] = cy;
-        
-        }
+    
        
         VectorSpecies<Float> SPECIES = FloatVector.SPECIES_PREFERRED;
         int step = SPECIES.length();
-        int boundc = SPECIES.loopBound(cx_arr.length);
-    
+        int boundc = SPECIES.loopBound(esc[0].length);
+
+        float [] med = new float [step]; 
+        for (float i = 0; i < med.length; i++) {
+            med[(int) i] = i; 
+        }
+        
+        FloatVector med_vec = FloatVector.fromArray(SPECIES, med, 0); 
 
         for (int i = 0; i < esc.length; i++) {
-            for (int j = 0; j < boundc; j += step) { // ! grab the left-overs
-                var va = FloatVector.broadcast(SPECIES, cy_arr[i]); // row
-                var vb = FloatVector.fromArray(SPECIES, cx_arr, j); // column
+            for (int j = 0; j < boundc; j += step) { 
+                var jStep = FloatVector.broadcast(SPECIES, j).add(med_vec).mul(xStep); 
+                var va = FloatVector.broadcast(SPECIES, yMin + i * yStep); // row
+                var vb = FloatVector.broadcast(SPECIES, xMin).add(jStep); // column
                 var zx = FloatVector.broadcast(SPECIES, 0);
                 var zy = FloatVector.broadcast(SPECIES, 0);
                 var z = FloatVector.broadcast(SPECIES, 0);
-        
                 var vIter = FloatVector.broadcast(SPECIES, 0);
-
                 var vfMask = vIter.compare(VectorOperators.LT, maxIter); // comparing each lane to maxIter
 
                 var vs1 = zx.mul(zx);
@@ -156,50 +147,54 @@ public class Mandelbrot {
                 var vs3 = vs1.add(vs2);
                 var vsMask = vs3.compare(VectorOperators.LT, maxSquareModulus);
 
+                var vcMask = vfMask.and(vsMask);
             
-                while (vsMask.trueCount() > 0 && vfMask.trueCount() > 0) {
+                while (vcMask.anyTrue()) {
                     
-                    var vcMask = vfMask.and(vsMask);
                     vIter = vIter.add(1, vcMask); // updating each lane if the mask was true
-                    z = vs1.sub(vs2, vcMask).add(vb, vcMask); //!check substract 
-                    zy = zx.mul(2, vcMask).mul(zy, vcMask).add(va, vcMask);
-                    zx.blend(z, vcMask); /// !how to use a mask here
+
+                    z = vs1.sub(vs2).add(vb); 
+                    zy = zx.mul(2).mul(zy).add(va);
+                    zx = z; 
+
                     vfMask = vIter.compare(VectorOperators.LT, maxIter); // comparing each lane to maxIter
                     vs1 = zx.mul(zx);
                     vs2 = zy.mul(zy);
                     vs3 = vs1.add(vs2);
                     vsMask = vs3.compare(VectorOperators.LT, maxSquareModulus);
+                    vcMask = vfMask.and(vsMask);
+                    
                 
                 }
-                System.out.println(vIter);
-                float [] res = vIter.toArray(); 
-                
-            //     for (int index = 0; index < step; index++) {
-            //         esc[i][j + index] = res[index]; 
-            //     }
+            
+                vIter.intoArray(esc[i], j);
+            
+               
 
-            // }
-            // for (int j = boundc; j < esc[0].length; j++) { // ! grab the left-overs
-            //     int iter = 0;
-            //     float zx_s = 0;
-            //     float zy_s = 0;
+            }
+            for (int j = boundc; j < esc[0].length; j++) { // ! grab the left-overs
+                int iter = 0;
+                float cx = xMin + j * xStep; // column
+                float cy = yMin + i * yStep; // row
+                float zx_s = 0;
+                float zy_s = 0;
 
-            //     while (iter < maxIter && zx_s * zx_s + zy_s * zy_s < maxSquareModulus) {
-            //         float z_s = zx_s * zx_s - zy_s * zy_s + cx_arr[j];
-            //         zy_s = 2 * zx_s * zy_s + cy_arr[i];
-            //         zx_s = z_s;
+                while (iter < maxIter && zx_s * zx_s + zy_s * zy_s < maxSquareModulus) {
+                    float z_s = zx_s * zx_s - zy_s * zy_s + cx;
+                    zy_s = 2 * zx_s * zy_s + cy;
+                    zx_s = z_s;
 
-            //         iter++;
-            //     }
+                    iter++;
+                }
 
-            //     esc[i][j] = iter;
+                esc[i][j] = iter;
                 }
 
 
         }
 
         
-
+//print values of the array 
         
 
 

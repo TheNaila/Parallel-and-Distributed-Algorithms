@@ -2,9 +2,9 @@ import java.util.Arrays;
 
 public class MandelbrotTester {
     // basic parameters
-    private static final int SIZE = 10;    // the size of the grid computed
-    private static final int WARMUP = 10;     // number of warmup iterations
-    private static final int NUM_TESTS = 1;  // number of test iterations
+    private static final int SIZE = 1_024;    // the size of the grid computed
+    private static final int WARMUP = 0;     // number of warmup iterations
+    private static final int NUM_TESTS = 10;  // number of test iterations
 
 
     //////////////////////////////////////////////////////////////
